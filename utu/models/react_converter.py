@@ -1,6 +1,7 @@
 # pylint: disable=line-too-long
 # ruff: noqa: E501
 
+import ast
 import json
 from copy import deepcopy
 from dataclasses import dataclass, field
@@ -203,11 +204,14 @@ class ReactConverter:
             try:
                 action = json.loads(text_output)
             except json.JSONDecodeError:
+                # Models often emit Python-literal dicts (single quotes). Parse them as literals only:
+                # never eval() model output, it is attacker-influenced via prompt injection.
                 try:
-                    action = eval(text_output)
-                except Exception as e:  # pylint: disable=broad-except
+                    action = ast.literal_eval(text_output)
+                except (ValueError, SyntaxError, TypeError, MemoryError, RecursionError) as e:
                     raise ValueError(f"Invalid action: {text_output}") from e
-            assert "name" in action and "arguments" in action
+            if not (isinstance(action, dict) and "name" in action and "arguments" in action):
+                raise ValueError(f"Invalid action: {text_output}")
             function = Function(name=action["name"], arguments=json.dumps(action["arguments"], ensure_ascii=False))
             message = ChatCompletionMessage(
                 role="assistant",

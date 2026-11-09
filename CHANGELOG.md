@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.1.5 - 2026-11-09
+- security(react): `ReactConverter` no longer `eval()`s the model's `Action:` text; non-JSON actions are parsed with `ast.literal_eval` and must be a dict with `name` and `arguments`. Before, with `runner: react`, a prompt-injected `Action:` could execute arbitrary Python on the host (TSRC report). Upgrade if you use the ReAct runner.
+
 ## v0.1.4 - 2026-11-06
 - security(webui): fix unauthenticated remote code execution in `WebUIAgents` (CNVD report). `switch_agent` only loads configs listed by `list_agents`; `/ws` and `/upload` reject cross-origin requests (`UTU_WEBUI_ALLOWED_ORIGINS` to allow more); upload filenames are confined to the workspace; access token `UTU_WEBUI_TOKEN`, required when listening on a non-loopback address (**breaking for Docker**: set `UTU_WEBUI_TOKEN` in `.env`, or `UTU_WEBUI_ALLOW_INSECURE=true` behind an authenticating proxy). Docker docs now publish the port on `127.0.0.1` only. Upgrade if your WebUI is reachable from other hosts.
 
