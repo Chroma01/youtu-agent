@@ -26,6 +26,7 @@ jobs:
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
+        python-version: "3.12"  # ubuntu-latest defaults to 3.14; onnxruntime has no cp314 wheels
     - name: Install dependencies
       run: make sync
     - name: Build package
